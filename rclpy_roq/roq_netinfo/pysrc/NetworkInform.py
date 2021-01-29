@@ -10,9 +10,10 @@ from roq_msgsrv.msg import NwProcMsg
 
 import traceback
 
-class NwtworkInform(Node):
+class NetworkInform(Node):
 	SELFNODE = 'netinfo'
 	SELFTOPIC = 'nw_proc'
+	SELFNIF = 'wlan0'
 
 	def __init__(self):
 		super().__init__(self.SELFNODE)
@@ -24,14 +25,35 @@ class NwtworkInform(Node):
 	def __del__(self):
 		self.get_logger().info("{} done.".format(self.SELFNODE))
 	
-	def read_status(self, filename, mode):
+	## acquire n_send, n_receive
+	def read_netproc(self, ifname):
+		filename = '/proc/net/dev'
+		mode = 'r'
 		fd = open(filename, mode)
+		line = fd.read().replace(':', '')
+		line_n = line.split('\n')
+
+		dic_netproc = {}
+		for line_ns in line_n:
+			line_ns = line_ns.split()
+			if len(line_ns) >= (1 + 9):
+				try:
+					dic_netproc[line_ns[0]] = ( int(line_ns[9]), int(line_ns[1]) )	# n_send, n_receive
+				except ValueError:
+					pass
+		return dic_netproc[ifname]
 
 	def pub_callback(self):
 		start = time.time()
 		
-		## MemProcMsg setup
-
+		## NwProcMsg setup
+		t_netproc = self.read_netproc(self.SELFNIF)
+		msg = NwProcMsg()
+		msg.is_valid = 0
+		msg.n_send = t_netproc[0]
+		msg.n_receive = t_netproc[1]
+		self.pub.publish(msg)
+		self.get_logger().info('n_send: {:11d},  n_receive: {:11d}'.format(msg.n_send, msg.n_receive))
 
 		end = time.time()
 		self.get_logger().info('time: {:.4f}'.format(end - start))
