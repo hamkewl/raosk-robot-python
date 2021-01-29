@@ -1,0 +1,10 @@
+# ----------------------------------------
+# .gitignore
+#  @Author Koki Nagahama (@hamstick)
+# ----------------------------------------
+
+## Ignore buildfile
+build/
+install/
+log/
+__pycache__/
