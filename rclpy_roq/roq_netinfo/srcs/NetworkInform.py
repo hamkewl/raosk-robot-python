@@ -14,6 +14,8 @@ class NetworkInform(Node):
 	SELFNODE = 'netinfo'
 	SELFTOPIC = 'nw_proc'
 	SELFNIF = 'wlan0'
+	sendCum_, receCum_ = 0, 0
+	sendDiff_, receDiff_ = 0, 0
 
 	def __init__(self):
 		super().__init__(self.SELFNODE)
@@ -39,7 +41,7 @@ class NetworkInform(Node):
 			if len(line_ns) >= (1 + 9):
 				try:
 					dic_netproc[line_ns[0]] = ( int(line_ns[9]), int(line_ns[1]) )	# n_send, n_receive
-				except ValueError:
+				except ValueError:	# line_ns[1] と line_ns[9] が文字列の場合にcatch
 					pass
 		return dic_netproc[ifname]
 
@@ -48,12 +50,17 @@ class NetworkInform(Node):
 		
 		## NwProcMsg setup
 		t_netproc = self.read_netproc(self.SELFNIF)
+		self.sendDiff_ = t_netproc[0] - self.sendCum_
+		self.sendCum_ = t_netproc[0]
+		self.receDiff_ = t_netproc[1] - self.receCum_
+		self.receCum_ = t_netproc[1]
+		
 		msg = NwProcMsg()
 		msg.is_valid = 0
-		msg.n_send = t_netproc[0]
-		msg.n_receive = t_netproc[1]
+		msg.n_send = self.sendDiff_ / (1e+3)	# Byte->KB
+		msg.n_receive = self.receDiff_ / (1e+3)	# Byte->KB	
 		self.pub.publish(msg)
-		self.get_logger().info('n_send: {:11d},  n_receive: {:11d}'.format(msg.n_send, msg.n_receive))
+		self.get_logger().info('n_send: {:6.4f}KB,  n_receive: {:6.4f}KB'.format(msg.n_send, msg.n_receive))
 
 		end = time.time()
 		self.get_logger().info('time: {:.4f}'.format(end - start))

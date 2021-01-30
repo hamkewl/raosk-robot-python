@@ -35,7 +35,7 @@ setup(
 	tests_require=['pytest'],
 	entry_points={
 		'console_scripts': [
-			'start = pysrc.NetworkInform:main',
+			'start = srcs.NetworkInform:main',
 		],
 	},
 )
