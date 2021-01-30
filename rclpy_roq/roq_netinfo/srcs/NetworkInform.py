@@ -2,6 +2,7 @@
 
 import os
 import time
+import numpy as np
 
 import rclpy
 from rclpy.node import Node
@@ -17,6 +18,9 @@ class NetworkInform(Node):
 	sendCum_, receCum_ = 0, 0
 	sendDiff_, receDiff_ = 0, 0
 
+	## to evaluation
+	exec_time = []
+
 	def __init__(self):
 		super().__init__(self.SELFNODE)
 		self.get_logger().info("{} initializing...".format((self.SELFNODE)))
@@ -26,6 +30,9 @@ class NetworkInform(Node):
 
 	def __del__(self):
 		self.get_logger().info("{} done.".format(self.SELFNODE))
+		print('data size[] = {}, mean([]): {:.6f}, max([]): {:.6f}'.format(
+			len(self.exec_time), np.mean(np.array(self.exec_time)), max(self.exec_time)
+		))
 	
 	## acquire n_send, n_receive
 	def read_netproc(self, ifname):
@@ -63,6 +70,7 @@ class NetworkInform(Node):
 		self.get_logger().info('n_send: {:6.4f}KB,  n_receive: {:6.4f}KB'.format(msg.n_send, msg.n_receive))
 
 		end = time.time()
+		self.exec_time.append(end - start)
 		self.get_logger().info('time: {:.4f}'.format(end - start))
 
 

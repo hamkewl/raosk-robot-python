@@ -2,6 +2,7 @@
 
 import os
 import time
+import numpy as np
 import psutil
 import subprocess
 import rclpy
@@ -17,6 +18,9 @@ class MemoryInform(Node):
 	SELFPID = os.getpid()
 	SELFNODE = 'meminfo_{}'.format(SELFPID)
 	SELFTOPIC = 'mem_proc'
+
+	## to evaluation
+	exec_time = []
 
 	def __init__(self):
 		super().__init__(self.SELFNODE)
@@ -43,6 +47,9 @@ class MemoryInform(Node):
 			self.pub.publish(msg)
 		"""
 		self.get_logger().info("{} done.".format(self.SELFNODE))
+		print('data size[] = {}, mean([]): {:.6f}, max([]): {:.6f}'.format(
+			len(self.exec_time), np.mean(np.array(self.exec_time)), max(self.exec_time)
+		))
 
 	def ptree_dfs(self, proc, pid):
 		plist, search = [], [pid]
@@ -110,6 +117,7 @@ class MemoryInform(Node):
 			pass
 		finally:
 			end = time.time()
+		self.exec_time.append(end - start)
 		self.get_logger().info('time: {:.4f}'.format(end - start))
 
 
