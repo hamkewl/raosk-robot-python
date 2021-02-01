@@ -30,6 +30,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/NwParamsMsg.msg"
   "msg/CopiedBinaryMsg.msg"
   "msg/OffloaderResultMsg.msg"
+  "msg/AbortPidsMsg.msg"
 
   # srv files
   "srv/MemoryModeler.srv"
