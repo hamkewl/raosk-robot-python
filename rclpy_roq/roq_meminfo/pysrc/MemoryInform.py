@@ -15,7 +15,7 @@ from roq_msgsrv.msg import MemProcMsg
 import traceback
 
 class MemoryInform(Node):
-	SELFPID = os.getpid()
+	SELFPID = os.getppid()
 	SELFNODE = 'meminfo_{}'.format(SELFPID)
 	SELFTOPIC = 'mem_proc'
 
@@ -35,17 +35,6 @@ class MemoryInform(Node):
 		self.get_logger().info("{} do...  @{}".format(self.SELFNODE, self.TOPPARENT))
 
 	def __del__(self):
-		"""
-			msg = MemProcMsg()
-			msg.vgid = self.SELFPID
-			msg.is_valid = 1
-			msg.system = 0.00
-			msg.buffer_sz = 0
-			msg.cache_sz = 0
-			msg.heap_sz = 0
-			msg.stack_sz = 0
-			self.pub.publish(msg)
-		"""
 		self.get_logger().info("{} done.".format(self.SELFNODE))
 		print('data size[] = {}, mean([]): {:.6f}, max([]): {:.6f}'.format(
 			len(self.exec_time), np.mean(np.array(self.exec_time)), max(self.exec_time)
@@ -79,6 +68,7 @@ class MemoryInform(Node):
 
 	def pub_callback(self):
 		start = time.time()
+		msg = MemProcMsg()
 
 		## get mem-information
 		# a1, a2: buffer, cache
@@ -96,10 +86,10 @@ class MemoryInform(Node):
 			ret = self.read_status(filename, mode)	# kB
 			heap += ret[0]
 			stack += ret[1]
+			msg.childs.append(pid)
 		
 		## MemProcMsg setup
 		try:
-			msg = MemProcMsg()
 			msg.vgid = self.SELFPID
 			msg.system = float(memory_obj.percent)
 
