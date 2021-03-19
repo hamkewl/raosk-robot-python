@@ -1,0 +1,7 @@
+### requirements.txt
+###  in raosk-robot-python
+### @Author Koki Nagahama
+
+## python libs
+numpy
+psutil
